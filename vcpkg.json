@@ -1,0 +1,30 @@
+{
+  "name": "nyu-template",
+  "version": "1.0.0",
+  "description": "NYU Processor Design's Template Repo",
+  "homepage": "https://github.com/NYU-Processor-Design/component-template",
+  "maintainers": [],
+  "license": "CC0-1.0",
+  "dependencies": [
+    "nyu-cmake",
+    "nyu-util",
+    "catch2"
+  ],
+  "vcpkg-configuration": {
+    "default-registry": {
+      "kind": "git",
+      "baseline": "5b081066f0740e54bdcbe4d0772d85dbb1d8e266",
+      "repository": "https://github.com/microsoft/vcpkg.git"
+    },
+    "registries": [
+      {
+        "kind": "git",
+        "baseline": "c7f3b91ec2add92605026916b8d727cfc3df88fa",
+        "repository": "https://github.com/NYU-Processor-Design/nyu-registry.git",
+        "packages": [
+          "nyu-*"
+        ]
+      }
+    ]
+  }
+}
