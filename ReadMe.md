@@ -1,18 +1,23 @@
-# HouseParty
+# 🎉 HouseParty 🎉
 
 An esoteric HDL I wrote to learn a little about CIRCT
 
 Example:
 
 ```
-houseparty nandGate
+houseparty DFlipFlop
 
-  sup A
-  sup B
+  sup clk
+  sup D
 
-  C knows A B
+  D_Prime knows clk D
+  E_Prime knows clk D_Prime
 
-  outtahere C
+  Q       knows D_Prime Q_Prime
+  Q_Prime knows E_Prime Q
+
+  outtahere Q
+  outtahere Q_Prime
 
 cops!
 ```
