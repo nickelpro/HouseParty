@@ -45,7 +45,7 @@ class HPModule:
   ident: str
   inputs: list[str]
   outputs: list[str]
-  assigns: dict[str, str]
+  assigns: dict[str, list[str]]
 
   @staticmethod
   def parseAction(tokens: pp.ParseResults):

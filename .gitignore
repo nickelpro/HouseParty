@@ -5,3 +5,4 @@ wheels
 build
 *.v
 *.mlir
+test.py
