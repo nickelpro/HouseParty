@@ -1,4 +1,3 @@
-import typing
 from dataclasses import dataclass
 
 import circt
@@ -9,7 +8,7 @@ from .grammar import HPModule
 
 
 @dataclass
-class Resolution:
+class ForwardRef:
   opIndex: int
   target: str
 
@@ -27,6 +26,47 @@ class IntermediateWire(hw.WireOp):
                            operands=operands))
 
 
+def populateNands(assigns, ops, isIntermediate):
+  cTrue = hw.ConstantOp(ir.BoolAttr.get(True))
+
+  class NandOp(comb.XorOp):
+    def __init__(self, inputs):
+      self.andOp = comb.AndOp(inputs)
+      super().__init__((self.andOp, cTrue))
+
+  unresolved = []  # Ops with forward refs
+  for target, exprs in assigns.items():
+    forwardRefs = []
+    operands = []
+    for idx, ident in enumerate(exprs):
+      if ident in ops:
+        operands.append(ops[ident])
+      elif ident in assigns:
+        operands.append(cTrue)
+        forwardRefs.append(ForwardRef(idx, ident))
+      else:
+        raise RuntimeError(f'Unknown expression: {ident}')
+
+    op = NandOp(operands) if len(operands) > 1 else comb.XorOp(operands)
+
+    if forwardRefs:
+      t = op.andOp if len(operands) > 1 else op
+      unresolved.append((t, forwardRefs))
+
+    if isIntermediate(target):
+      op = IntermediateWire(op, target)
+
+    ops[target] = op
+
+  return unresolved
+
+
+def resolveForwardRefs(unresolved, ops):
+  for op, fills in unresolved:
+    for fill in fills:
+      op.operands[fill.opIndex] = ods.get_op_result_or_value(ops[fill.target])
+
+
 def genIR(hpmod: HPModule, use_int=True):
   with ir.Context() as ctx, ir.Location.unknown():
     circt.register_dialects(ctx)
@@ -36,47 +76,15 @@ def genIR(hpmod: HPModule, use_int=True):
     with ir.InsertionPoint(irmod.body):
 
       def genBody(module):
-        cTrue = hw.ConstantOp(ir.BoolAttr.get(True))
-
-        class NandOp(comb.XorOp):
-          def __init__(self, inputs):
-            self.andOp = comb.AndOp(inputs)
-            super().__init__((self.andOp, cTrue))
-
-        def isIntermediate(target):
-          return target not in hpmod.inputs and target not in hpmod.outputs
+        if use_int:
+          isInt = lambda x: x not in hpmod.inputs and x not in hpmod.outputs
+        else:
+          isInt = lambda _: False
 
         ops = module.inputs()
         assigns = hpmod.assigns.copy()
-        unresolved = []
-
-        for target, exprs in assigns.items():
-          opUnresolved = []
-          operands = []
-          for idx, ident in enumerate(exprs):
-            if ident in ops:
-              operands.append(ops[ident])
-            elif ident in assigns:
-              operands.append(cTrue)
-              opUnresolved.append(Resolution(idx, ident))
-            else:
-              RuntimeError(f'Unknown expression: {ident}')
-
-          op = NandOp(operands) if len(operands) > 1 else comb.XorOp(operands)
-
-          if opUnresolved:
-            t = op.andOp if len(operands) > 1 else op
-            unresolved.append((t, opUnresolved))
-
-          if use_int and isIntermediate(target):
-            op = IntermediateWire(op, target)
-
-          ops[target] = op
-
-        for op, fills in unresolved:
-          for fill in fills:
-            op.operands[fill.opIndex] = ods.get_op_result_or_value(
-                ops[fill.target])
+        unresolved = populateNands(assigns, ops, isInt)
+        resolveForwardRefs(unresolved, ops)
 
         return {ident: ops[ident] for ident in hpmod.outputs}
 
