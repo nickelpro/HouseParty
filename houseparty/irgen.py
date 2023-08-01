@@ -13,19 +13,6 @@ class ForwardRef:
   target: str
 
 
-class IntermediateWire(hw.WireOp):
-  def __init__(self, input, name):
-    operands = [ods.get_op_result_or_value(input)]
-    results = [operands[0].type]
-    attributes = {
-        'name': ir.StringAttr.get(name),
-        'inner_sym': ir.StringAttr.get(name),
-    }
-    super().__init__(
-        self.build_generic(attributes=attributes, results=results,
-                           operands=operands))
-
-
 def populateNands(assigns, ops, isIntermediate):
   cTrue = hw.ConstantOp(ir.BoolAttr.get(True))
 
@@ -54,7 +41,7 @@ def populateNands(assigns, ops, isIntermediate):
       unresolved.append((t, forwardRefs))
 
     if isIntermediate(target):
-      op = IntermediateWire(op, target)
+      op = hw.WireOp(op, name=target, inner_sym=target)
 
     ops[target] = op
 
