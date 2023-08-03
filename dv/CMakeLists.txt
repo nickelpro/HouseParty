@@ -8,8 +8,8 @@ target_sources(tests PRIVATE
 nyu_link_sv(tests PRIVATE testLib)
 nyu_target_verilate(tests
   TOP_MODULES DFlipFlop
+  PREFIX HP
   ARGS TRACE_FST
-  PREFIX HPDFlipFlop
   VERILATOR_ARGS -Wno-UNOPTFLAT
 )
 target_link_libraries(tests PRIVATE
