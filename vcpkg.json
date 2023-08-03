@@ -13,13 +13,13 @@
   "vcpkg-configuration": {
     "default-registry": {
       "kind": "git",
-      "baseline": "5b081066f0740e54bdcbe4d0772d85dbb1d8e266",
+      "baseline": "980ec0f49d81f794778386f7bd518b2cc9c092f0",
       "repository": "https://github.com/microsoft/vcpkg.git"
     },
     "registries": [
       {
         "kind": "git",
-        "baseline": "c7f3b91ec2add92605026916b8d727cfc3df88fa",
+        "baseline": "68c856e5469ae5b275d83cce7cebaa3264a88707",
         "repository": "https://github.com/NYU-Processor-Design/nyu-registry.git",
         "packages": [
           "nyu-*"

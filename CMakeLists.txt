@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.27)
 
 if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
   include(FetchContent)
@@ -21,8 +21,12 @@ add_custom_target(UpdateVcpkgBaseline
 )
 
 project(houseparty VERSION 1.0.0)
+include(cmake/HPYTest.cmake)
+
+add_library(testLib INTERFACE)
+add_subdirectory(rtl)
 
 if(NYU_BUILD_TESTS)
   enable_testing()
-  add_subdirectory(tests)
+  add_subdirectory(dv)
 endif()
