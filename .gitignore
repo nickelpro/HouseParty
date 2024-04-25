@@ -6,3 +6,4 @@ build
 *.v
 *.mlir
 test.py
+firtool*/

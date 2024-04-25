@@ -34,14 +34,19 @@ def populateNands(assigns, ops, isIntermediate):
       else:
         raise RuntimeError(f'Unknown expression: {ident}')
 
-    op = NandOp(operands) if len(operands) > 1 else comb.XorOp(operands)
+    if len(operands) > 1:
+      op = NandOp(operands)
+    else:
+      operands.append(cTrue)
+      op = comb.XorOp(operands)
 
     if forwardRefs:
       t = op.andOp if len(operands) > 1 else op
       unresolved.append((t, forwardRefs))
 
     if isIntermediate(target):
-      op = hw.WireOp(op, name=target, inner_sym=target)
+      op = hw.WireOp(op, name=target,
+                     inner_sym=hw.InnerSymAttr.get(ir.StringAttr.get(target)))
 
     ops[target] = op
 
